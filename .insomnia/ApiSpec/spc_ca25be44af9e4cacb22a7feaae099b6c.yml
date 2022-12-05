@@ -1,0 +1,153 @@
+_id: spc_ca25be44af9e4cacb22a7feaae099b6c
+type: ApiSpec
+parentId: wrk_91e8f25e3d37414891e6e5f2fe7aacbc
+modified: 1645579550138
+created: 1624505775462
+fileName: customer-api
+contents: |
+  openapi: "3.0.0"
+  info:
+    version: 1.0.1
+    title: customer
+    license:
+      name: Kong
+
+  servers:
+    - url: ${UPSTREAM_SERVER_URL}$
+      description: Upstream server URL.
+
+
+  # Key Auth plugin enables authentication for this service
+  # x-kong-plugin-key-auth:
+  #   enabled: true
+  #   config:
+  #     key_names:
+  #     - apikey
+
+  # x-kong-plugin-opa:
+  #       enabled: true
+  #       config:
+  #         opa_host: ${OPA_HOST}$
+  #         opa_port: ${OPA_PORT}$
+  #         opa_path: /v1/data/userAuthz/allowUser
+  #         include_consumer_in_opa_input: true
+  #         include_route_in_opa_input: true
+  #         include_service_in_opa_input: true
+
+
+  # x-kong-plugin-request-size-limiting:
+  #       enabled: true
+  #       config:
+  #         allowed_payload_size: 1
+  #         size_unit: megabytes
+
+
+  # HTTP Log plugin sends logs to Sumo Logic
+  # x-kong-plugin-http-log:
+  #   enabled: true
+  #   config:
+  #     http_endpoint: ${SUMO_SERVER_URL}$
+  paths:
+    "/v1/customers":
+      get:
+        summary: List all customers
+        operationId: listCustomers
+        tags:
+          - customers
+        x-kong-plugin-mocking:
+          enabled: true
+          config:
+            api_specification_filename: customer.yaml
+        
+  #       x-kong-plugin-rate-limiting-advanced: 
+  #         enabled: true
+  #         config:        
+  #           limit:
+  #           - 5
+  #           window_size: 
+  #           - 30
+  #           identifier: consumer
+  #           dictionary_name: kong_rate_limiting_counters
+  #           sync_rate: -1
+  #           namespace: random_auto_generated_string
+  #           strategy: redis
+  #           hide_client_headers: false
+  #           window_type: sliding
+  #           retry_after_jitter_max: 0
+  #           redis:
+  #             host: nima-redis.redis.cache.windows.net
+  #             port: 6379
+  #             ssl: false
+                          
+  #       x-kong-plugin-proxy-cache-advanced: 
+  #         enabled: true
+  #         config:        
+  #           response_code:
+  #           - 200
+  #           request_method: 
+  #           - GET
+  #           - HEAD
+  #           content_type:
+  #           - text/plain
+  #           - application/json
+  #           cache_control: false
+  #           cache_ttl: 20
+  #           strategy: redis           
+  #           redis:
+  #             host: nima-redis.redis.cache.windows.net
+  #             port: 6379
+  #             ssl: false
+            
+  #       x-kong-plugin-rate-limiting: 
+  #         enabled: true
+  #         config:        
+  #           minute: 5
+  #           policy: local
+            
+        responses:
+          '200':
+            description: An array of customers                    
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/Customers"
+                examples:
+                   response:
+                    value:
+                      - id: 4789
+                        customerName: Robert DeNiro
+                      - id: 36987
+                        customerName: Al Pacino   
+          default:
+            description: unexpected error
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/Error"
+
+  components:
+    schemas:
+      Customer:
+        type: object
+        properties:
+          id:
+            type: integer
+            format: int64
+          customerName:
+            type: string     
+      Customers:
+        type: array
+        items:
+          $ref: "#/components/schemas/Customer"
+      Error:
+        type: object
+        required:
+          - code
+          - message
+        properties:
+          code:
+            type: integer
+            format: int32
+          message:
+            type: string
+contentType: yaml
